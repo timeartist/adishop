@@ -1,6 +1,8 @@
 from flask import Flask, render_template
+from adishop.services.shopping_cart import shopping_cart_bp
 
 app = Flask(__name__)
+app.register_blueprint(shopping_cart_bp)
 
 @app.route('/')
 def index():

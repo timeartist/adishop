@@ -197,7 +197,7 @@
                     <div class="product-info">
                         <h3 class="product-title">Product 4</h3>
                         <p class="product-price">$19.99</p>
-                        <a href="#" class="btn">Add to Cart</a>
+                        <button onclick="addToCart('product456', 'user123', 1)" class="btn">Add to Cart</button>
                     </div>
                 </div>
             </div>
@@ -210,4 +210,27 @@
         </div>
     </footer>
 </body>
+<script>
+    function addToCart(productId, userId, quantity) {
+        fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                product_id: productId,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            alert('Product added to cart!');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+</script>
 </html>
