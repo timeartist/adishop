@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
 
-# Create a Blueprint for the shopping cart
 shopping_cart_bp = Blueprint('shopping_cart', __name__)
 
 # In-memory storage for demonstration
