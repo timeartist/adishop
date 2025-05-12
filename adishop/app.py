@@ -8,5 +8,9 @@ app.register_blueprint(shopping_cart_bp)
 def index():
     return render_template('index.jinja')
 
+@app.route('/cart')
+def cart():
+    return render_template('shopping_cart.jinja', cart_items=[])
+
 if __name__ == '__main__':
     app.run(debug=True)
