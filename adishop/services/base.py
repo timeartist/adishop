@@ -25,16 +25,20 @@ class BaseService:
         else:
             return False
     
+    def random_fail(self, f):
+            def wrapper(*args, **kwargs):
+                if self._should_fail():
+                    return "Random failure occurred!", 500
+                return f(*args, **kwargs)
+            return wrapper
+    
     def _setup_routes(self):
-        
         ##TODO: Wrap this in a decorator to do the random failure check, subclasses should overwrite handle function
         """Set up the Flask routes"""
         @self.app.route('/')
+        @self.random_fail
         def home():
-            if self._should_fail():
-                return "Random failure occurred!", 500
-            else:
-                return self.response_message, 200
+            return self.handle()
     
     def set_response_message(self, message):
         """Update the response message at runtime"""
@@ -45,7 +49,11 @@ class BaseService:
         print(f"Server running at http://{self.host}:{self.port}/")
         self.app.run(host=self.host, port=self.port, debug=self.debug)
 
-def main():
+    def handle(self):
+        """Handle the request, to be overridden by subclasses"""
+        return self.response_message, 200
+
+def parse_args():
     # Set up argument parser
     parser = ArgumentParser(description='Run Flask service')
     parser.add_argument('--message', type=str, default="Hello, World!", 
@@ -78,10 +86,16 @@ def main():
             parser.error("Host must be a valid IP address (e.g. 127.0.0.1)")
         parser.error("Host cannot be empty")
 
-    print(args.random_failures)
-    
-    # Example usage with command line arguments
-    service = BaseService(
+    return args
+
+def run_service(ServiceClass:BaseService, args):
+    '''
+    Generically run the service - this should be something that is usable/importable for other subclassed services
+    Args:
+        ServiceClass: The class of the service to run
+        args: The arguments to pass to the service
+    '''
+    service = ServiceClass(
         host=args.host,
         port=args.port,
         response_message=args.message,
@@ -91,7 +105,9 @@ def main():
     )
     service.run()
 
-
-if __name__ == "__main__":
-    main()
+def main():
+    # Parse command line arguments
+    args = parse_args()
     
+    # Run the service with the parsed arguments
+    run_service(BaseService, args)
