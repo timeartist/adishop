@@ -1,0 +1,1 @@
+from adishop.services.base import BaseService, run_service, parse_args

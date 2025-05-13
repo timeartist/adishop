@@ -7,14 +7,13 @@ services:
     environment:
       - TEMPORAL_ADDRESS=host.docker.internal:7233
     command: poetry run web
-
   worker:
     build:
       context: .
     command: poetry run worker --docker
-  service-mock:
+  service-product:
     build:
       context: .
     ports:
-      - "5050:5050"
-    command: poetry run service-mock --port 5050 --host 0.0.0.0
+      - "5555:5555"
+    command: poetry run service-product --port 5555 --host 0.0.0.0 --random-failures
