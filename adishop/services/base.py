@@ -132,6 +132,8 @@ def run_service(ServiceClass:BaseService, args):
     service.run()
 
 def main():
+    '''
+    This exists primarily for poetry to hook into to make command line config cleaner'''
     # Parse command line arguments
     args = parse_args()
     
