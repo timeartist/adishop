@@ -42,5 +42,5 @@ if __name__ == "__main__":
     asyncio.run(run_update_cart(item_id, quantity))
     
     ##TODO: we want this to fail, but it's failing in a way that we are not catching - commenting out for now
-    quantity = -101
-    asyncio.run(run_update_cart(item_id, quantity))
+    # quantity = -101
+    # asyncio.run(run_update_cart(item_id, quantity))

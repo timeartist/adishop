@@ -26,6 +26,8 @@ class BaseService:
             return False
     
     def _setup_routes(self):
+        
+        ##TODO: Wrap this in a decorator to do the random failure check, subclasses should overwrite handle function
         """Set up the Flask routes"""
         @self.app.route('/')
         def home():

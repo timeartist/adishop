@@ -1,66 +1,84 @@
+import os
 import pandas as pd
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 
-from sqlalchemy.orm import sessionmaker, declarative_base
-import datetime
 
-# Create a base class for our class definitions
-Base = declarative_base()
-
-class Adidas(Base):
-    __tablename__ = 'adidas'
-    
-    index = Column(Integer, primary_key=True)
-    url = Column(String)
-    name = Column(String)
-    sku = Column(String)
-    selling_price = Column(Float)
-    original_price = Column(Float, nullable=True)
-    currency = Column(String)
-    availability = Column(String)
-    color = Column(String)
-    category = Column(String)
-    source = Column(String)
-    source_website = Column(String)
-    breadcrumbs = Column(String)
-    description = Column(String)
-    brand = Column(String)
-    images = Column(String)
-    country = Column(String)
-    language = Column(String)
-    average_rating = Column(Float)
-    reviews_count = Column(Integer)
-    crawled_at = Column(DateTime)
-
-def load_csv_to_postgres():
+def load_csv_to_pandas():
     # Read the CSV file
-    df = pd.read_csv('adidas.csv')
+    df = pd.read_csv('products.csv')
     
     # Convert crawled_at string to datetime
     df['crawled_at'] = pd.to_datetime(df['crawled_at'])
     
-    # Convert empty strings in original_price to NaN
+    # Convert empty strings in original_price to NaN and remove currency symbols
     df['original_price'] = df['original_price'].replace('', float('nan'))
     
-    # Create a database connection
-    engine = create_engine('postgresql://postgres:password@localhost:5432')
+    # Clean price columns by removing currency symbols and converting to numeric
+    df['original_price'] = df['original_price'].astype(str).str.replace('$', '').str.replace(',', '').replace('', float('nan')).astype(float, errors='ignore')
+    df['selling_price'] = df['selling_price'].astype(str).str.replace('$', '').str.replace(',', '').replace('', float('nan')).astype(float, errors='ignore')
     
-    # Create the table
-    Base.metadata.create_all(engine)
+    # Define column types using pandas dtypes
+    dtypes = {
+        'index': 'int64',
+        'url': 'str',
+        'name': 'str',
+        'sku': 'str',
+        'selling_price': 'float64',
+        'original_price': 'float64',
+        'currency': 'str',
+        'availability': 'str',
+        'color': 'str',
+        'category': 'str',
+        'source': 'str',
+        'source_website': 'str',
+        'breadcrumbs': 'str',
+        'description': 'str',
+        'brand': 'str',
+        'images': 'str',
+        'country': 'str',
+        'language': 'str',
+        'average_rating': 'float64',
+        'reviews_count': 'int64',
+        'crawled_at': 'datetime64[ns]'
+    }
     
-    # Create a session
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    # Apply the pandas dtypes
+    df = df.astype({k: v for k, v in dtypes.items() if k in df.columns})
+    # Store the DataFrame for later querying
+    # You can save it as a pickle file for persistence
+    df.to_pickle('products_db.pkl')
     
-    # Insert data into the database
-    try:
-        # Use pandas to_sql method for bulk insert
-        df.to_sql('adidas', engine, if_exists='replace', index=False)
-        print("Data successfully loaded into PostgreSQL database")
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        session.close()
+    print("Data successfully loaded into in-memory pandas DataFrame")
+    return df
+
+# Example of how to query the data
+def query_data(df, sku=None, **filters):
+    """
+    Query the DataFrame with filters or by specific SKU
+    Examples: 
+    - query_data(df, brand='Adidas', color='black')
+    - query_data(df, sku='ABC123')
+    """
+    if sku is not None:
+        # Return a single row by SKU
+        if sku in df['sku'].values:
+            return df[df['sku'] == sku]
+        return pd.DataFrame()  # Return empty DataFrame if SKU not found
+    
+    # Filter by other criteria
+    query_result = df.copy()
+    for column, value in filters.items():
+        if column in df.columns:
+            query_result = query_result[query_result[column] == value]
+    return query_result
+
+def load_data():
+    """Load data from pickle file if it exists, otherwise load from CSV"""
+    if os.path.exists('products_db.pkl'):
+        print("Loading data from pickle file...")
+        return pd.read_pickle('products_db.pkl')
+    else:
+        return load_csv_to_pandas()
+    
 
 if __name__ == "__main__":
-    load_csv_to_postgres()
+    db_df = load_data()
