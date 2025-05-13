@@ -2,16 +2,15 @@ import re
 from argparse import ArgumentParser
 from random import randint
 
-from flask import Flask
+from flask import Flask ,jsonify
 
 class BaseService: 
-    def __init__(self, host='127.0.0.1', port=5000, response_message="Hello, World!", 
+    def __init__(self, host='127.0.0.1', port=5000,
                  debug=True, random_failures=False, random_failure_ratio=.1, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.app = Flask(__name__)
         self.host = host
         self.port = port
-        self.response_message = response_message
         self.debug = debug
         self.random_failures = random_failures
         self.random_failure_ratio = random_failure_ratio
@@ -28,36 +27,66 @@ class BaseService:
     def random_fail(self, f):
             def wrapper(*args, **kwargs):
                 if self._should_fail():
-                    return "Random failure occurred!", 500
+                    return jsonify({"error": "Random failure occurred!"}), 500
                 return f(*args, **kwargs)
             return wrapper
     
     def _setup_routes(self):
         ##TODO: Wrap this in a decorator to do the random failure check, subclasses should overwrite handle function
         """Set up the Flask routes"""
-        @self.app.route('/')
+        @self.app.route('/', endpoint='get_endpoint')
         @self.random_fail
-        def home():
-            return self.handle()
-    
-    def set_response_message(self, message):
-        """Update the response message at runtime"""
-        self.response_message = message
+        def get():
+            return self.handle_get()
+        
+        @self.app.route('/', methods=['POST'], endpoint='post_endpoint')
+        @self.random_fail
+        def post():
+            return self.handle_post()
+
+        @self.app.route('/', methods=['PUT'], endpoint='put_endpoint')
+        @self.random_fail
+        def put():
+            return self.handle_put()
+
+        @self.app.route('/', methods=['DELETE'], endpoint='delete_endpoint')
+        @self.random_fail
+        def delete():
+            return self.handle_delete()
+
+        @self.app.route('/', methods=['PATCH'], endpoint='patch_endpoint')
+        @self.random_fail
+        def patch():
+            return self.handle_patch()
     
     def run(self):
         """Run the Flask server directly"""
         print(f"Server running at http://{self.host}:{self.port}/")
         self.app.run(host=self.host, port=self.port, debug=self.debug)
 
-    def handle(self):
+    def handle_get(self):
         """Handle the request, to be overridden by subclasses"""
-        return self.response_message, 200
+        return jsonify({"message": "GET method not implemented"}), 501
+    
+    def handle_post(self):
+        """Handle POST request, to be overridden by subclasses"""
+        return jsonify({"message": "POST method not implemented"}), 501
+
+    def handle_put(self):
+        """Handle PUT request, to be overridden by subclasses"""
+        return jsonify({"message": "PUT method not implemented"}), 501
+
+    def handle_delete(self):
+        """Handle DELETE request, to be overridden by subclasses"""
+        return jsonify({"message": "DELETE method not implemented"}), 501
+
+    def handle_patch(self):
+        """Handle PATCH request, to be overridden by subclasses"""
+        return jsonify({"message": "PATCH method not implemented"}), 501
 
 def parse_args():
     # Set up argument parser
     parser = ArgumentParser(description='Run Flask service')
-    parser.add_argument('--message', type=str, default="Hello, World!", 
-                        help='Response message (default: "Hello, World!")')
     parser.add_argument('--host', type=str, default='127.0.0.1', 
                         help='Host to run the server on (default: 127.0.0.1)')
     parser.add_argument('--port', type=int, default=5000, 
@@ -77,9 +106,7 @@ def parse_args():
         
     if args.failure_ratio < 0.0 or args.failure_ratio > 1.0:
         parser.error("Failure ratio must be between 0.0 and 1.0")
-        
-    if not args.message.strip():
-        parser.error("Message cannot be empty")
+
         
     if not args.host.strip():
         if not re.match(r'^(\d{1,3}\.){3}\d{1,3}$', args.host):
@@ -98,7 +125,6 @@ def run_service(ServiceClass:BaseService, args):
     service = ServiceClass(
         host=args.host,
         port=args.port,
-        response_message=args.message,
         debug=args.debug,
         random_failures=args.random_failures,
         random_failure_ratio=args.failure_ratio
