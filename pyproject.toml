@@ -11,10 +11,10 @@ temporalio = "^1.11.1"
 pandas = "^2.2.3"
 sqlalchemy = "^2.0.40"
 psycopg2-binary = "^2.9.10"
-flask = "^3.1.0"
+flask = {extras = ["async"], version = "^3.1.0"}
 
 [tool.poetry.scripts]
-front-end = "adishop.app:main"
+web = "adishop.app:main"
 services = "services:main"
 worker = "adishop.temporal.worker:main"
 

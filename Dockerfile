@@ -17,4 +17,3 @@ RUN mv poetry.lock.bak poetry.lock
 RUN poetry install 
 
 ENV PYTHONUNBUFFERED=1
-CMD [ "poetry", "run", "front-end" ]
