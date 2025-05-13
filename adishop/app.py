@@ -11,6 +11,9 @@ def index():
 @app.route('/cart')
 def cart():
     return render_template('shopping_cart.jinja', cart_items=[])
+def main():
+    """Run the Flask server directly"""
+    app.run(debug=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    main()
