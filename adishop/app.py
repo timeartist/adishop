@@ -20,7 +20,15 @@ async def _get_temporal_client():
     
     return await Client.connect(TEMPORAL_ADDRESS) 
 
-TEMPORAL_CLIENT = asyncio.run(_get_temporal_client())
+app.config['TEMPORAL_ADDRESS'] = TEMPORAL_ADDRESS
+
+# Use a deferred client loader pattern
+def get_temporal_client():
+    if 'TEMPORAL_CLIENT' not in app.config:
+        app.config['TEMPORAL_CLIENT'] = asyncio.run(_get_temporal_client())
+    return app.config['TEMPORAL_CLIENT']
+
+app.config['TEMPORAL_CLIENT'] = get_temporal_client()
 
 @app.route('/')
 def index():
@@ -28,7 +36,7 @@ def index():
 
 @app.route('/cart')
 async def cart():
-    result = await TEMPORAL_CLIENT.execute_workflow(
+    result = await app.config['TEMPORAL_CLIENT'].execute_workflow(
     UpdateCartWorkflow.run,
     ['item_id', -1],
     task_queue="adishop-task-queue",

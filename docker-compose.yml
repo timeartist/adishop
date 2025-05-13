@@ -12,3 +12,9 @@ services:
     build:
       context: .
     command: poetry run worker --docker
+  service-mock:
+    build:
+      context: .
+    ports:
+      - "5050:5050"
+    command: poetry run service-mock --port 5050 --host 0.0.0.0

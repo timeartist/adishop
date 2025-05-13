@@ -4,9 +4,7 @@ from random import randint
 
 from flask import Flask
 
-
-
-class MockService:
+class BaseService: 
     def __init__(self, host='127.0.0.1', port=5000, response_message="Hello, World!", 
                  debug=True, random_failures=False, random_failure_ratio=.1, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -81,7 +79,7 @@ def main():
     print(args.random_failures)
     
     # Example usage with command line arguments
-    service = MockService(
+    service = BaseService(
         host=args.host,
         port=args.port,
         response_message=args.message,
