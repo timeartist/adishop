@@ -2,11 +2,10 @@ import re
 from argparse import ArgumentParser
 from random import randint
 
-from flask import Flask ,jsonify
+from flask import Flask,jsonify
 
 class BaseService: 
-    def __init__(self, host='127.0.0.1', port=5000,
-                 debug=True, random_failures=False, random_failure_ratio=.1, *args, **kwargs):
+    def __init__(self, host='127.0.0.1', port=5000, debug=True, random_failures=False, random_failure_ratio=.1, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.app = Flask(__name__)
         self.host = host

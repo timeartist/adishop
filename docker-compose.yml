@@ -17,3 +17,15 @@ services:
     ports:
       - "5555:5555"
     command: poetry run service-product --port 5555 --host 0.0.0.0 --random-failures
+  service-inventory:
+    build:
+      context: .
+    ports:
+      - "5656:5656"
+    command: poetry run service-inventory --port 5656 --host 0.0.0.0
+  service-cart:
+    build:
+      context: .
+    ports:
+      - "5757:5656"
+    command: poetry run service-cart --port 5656 --host 0.0.0.0
