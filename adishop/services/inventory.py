@@ -24,14 +24,14 @@ class InventoryService(BaseService):
         """Retrieve all item quantities from the inventory."""
         return self.inventory
 
-    def handle_get(self, request):
-        """Handle HTTP GET requests."""
+    def handle_get(self, _):
+        """Handle HTTP GET argss."""
         return {"status": "success", "data": self.get_items()}
 
-    def handle_post(self, request):
-        """Handle HTTP POST requests."""
-        item_id = request.get("sku")
-        quantity = request.get("quantity", 1)
+    def handle_post(self, args):
+        """Handle HTTP POST argss."""
+        item_id = args.get("sku")
+        quantity = args.get("quantity", 1)
         
         if not item_id:
             return {"status": "error", "message": "sku is required"}
@@ -46,10 +46,10 @@ class InventoryService(BaseService):
         self.add_item(item_id, quantity)
         return {"status": "success", "message": "Item quantity updated successfully"}
 
-    def handle_delete(self, request):
-        """Handle HTTP DELETE requests."""
-        item_id = request.get("sku")
-        quantity = request.get("quantity")
+    def handle_delete(self, args):
+        """Handle HTTP DELETE argss."""
+        item_id = args.get("sku")
+        quantity = args.get("quantity")
         
         if not item_id:
             return {"status": "error", "message": "sku is required"}

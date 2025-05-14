@@ -2,7 +2,7 @@ import re
 from argparse import ArgumentParser
 from random import randint
 
-from flask import Flask,jsonify
+from flask import Flask, jsonify, request
 
 class BaseService: 
     def __init__(self, host='127.0.0.1', port=5000, debug=True, random_failures=False, random_failure_ratio=.1, *args, **kwargs):
@@ -32,32 +32,25 @@ class BaseService:
     
     def _setup_routes(self):
         ##TODO: Wrap this in a decorator to do the random failure check, subclasses should overwrite handle function
-        """Set up the Flask routes"""
-        @self.app.route('/', endpoint='get_endpoint')
+        """Set up a single Flask route that handles all HTTP methods"""
+        @self.app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
         @self.random_fail
-        def get():
-            return self.handle_get()
-        
-        @self.app.route('/', methods=['POST'], endpoint='post_endpoint')
-        @self.random_fail
-        def post():
-            return self.handle_post()
-
-        @self.app.route('/', methods=['PUT'], endpoint='put_endpoint')
-        @self.random_fail
-        def put():
-            return self.handle_put()
-
-        @self.app.route('/', methods=['DELETE'], endpoint='delete_endpoint')
-        @self.random_fail
-        def delete():
-            return self.handle_delete()
-
-        @self.app.route('/', methods=['PATCH'], endpoint='patch_endpoint')
-        @self.random_fail
-        def patch():
-            return self.handle_patch()
-    
+        def handle_request():
+            # Use request.method to determine which handler to call
+            method = request.method
+            match method:
+                case 'GET':
+                    return self.handle_get(request.args)
+                case 'POST':
+                    return self.handle_post(request.args)
+                case 'PUT':
+                    return self.handle_put(request.args)
+                case 'DELETE':
+                    return self.handle_delete(request.args)
+                case 'PATCH':
+                    return self.handle_patch(request.args)
+                case _:
+                    return jsonify({"error": f"Method {method} not supported"}), 405
     def run(self):
         """Run the Flask server directly"""
         print(f"Server running at http://{self.host}:{self.port}/")

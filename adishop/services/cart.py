@@ -15,33 +15,32 @@ class CartService(BaseService):
         """Remove an SKU from the user's cart."""
         if user_id in self.carts:
             self.carts[user_id] = [
-                item for item in self.carts[user_id] if item != sku
-            ]
+                item for item in self.carts[user_id] if item != sku]
 
     def get_items(self, user_id):
         """Retrieve items from the user's cart."""
         return self.carts.get(user_id, [])
 
-    def handle_get(self, request):
+    def handle_get(self, args):
         """Handle HTTP GET requests."""
-        user_id = request.get("user_id")
+        user_id = args.get("user_id")
         if not user_id:
             return {"status": "error", "message": "User ID is required"}
         return {"status": "success", "data": self.get_items(user_id)}
 
-    def handle_post(self, request):
+    def handle_post(self, args):
         """Handle HTTP POST requests."""
-        user_id = request.get("user_id")
-        sku = request.get("sku")
+        user_id = args.get("user_id")
+        sku = args.get("sku")
         if not user_id or not sku:
             return {"status": "error", "message": "User ID and SKU are required"}
         self.add_item(user_id, sku)
         return {"status": "success", "message": "Item added successfully"}
 
-    def handle_delete(self, request):
+    def handle_delete(self, args):
         """Handle HTTP DELETE requests."""
-        user_id = request.get("user_id")
-        sku = request.get("sku")
+        user_id = args.get("user_id")
+        sku = args.get("sku")
         if not user_id or not sku:
             return {"status": "error", "message": "User ID and SKU are required"}
         self.remove_item(user_id, sku)
