@@ -33,22 +33,22 @@ class BaseService:
     def _setup_routes(self):
         ##TODO: Wrap this in a decorator to do the random failure check, subclasses should overwrite handle function
         """Set up a single Flask route that handles all HTTP methods"""
-        @self.app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
+        @self.app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
         @self.random_fail
-        def handle_request():
+        def handle_request(path):
             # Use request.method to determine which handler to call
             method = request.method
             match method:
                 case 'GET':
-                    return self.handle_get(request.args)
+                    return self.handle_get(path, request.args)
                 case 'POST':
-                    return self.handle_post(request.args)
+                    return self.handle_post(path, request.args)
                 case 'PUT':
-                    return self.handle_put(request.args)
+                    return self.handle_put(path, request.args)
                 case 'DELETE':
-                    return self.handle_delete(request.args)
+                    return self.handle_delete(path, request.args)
                 case 'PATCH':
-                    return self.handle_patch(request.args)
+                    return self.handle_patch(path, request.args)
                 case _:
                     return jsonify({"error": f"Method {method} not supported"}), 405
     def run(self):
